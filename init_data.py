@@ -13,7 +13,7 @@ cursor = conn.cursor()
 # 
 # Source and target is used to store the type of currency
 # that the user is going to convert in his bank account
-cursor.execute("""CREATE TABLE wallet (user_id text, 
+cursor.execute("""CREATE TABLE wallet (user_id text UNIQUE, 
     USD float,
     EUR float,
     PLN float,
