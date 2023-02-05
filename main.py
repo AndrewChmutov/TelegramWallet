@@ -2,12 +2,16 @@ import telegram
 import telegram.ext
 from telegram.ext import CallbackContext
 
+# custom library
+import users
+
 # token of the bot. For individual use, you should enter yous
 TOKEN = open('token.txt', mode='r').read()
 
 
 # handling commands and conversations
 def start_command(update: telegram.Update, context: CallbackContext):
+    users.add_user(update.message.chat_id)
     response = open('commands/start.txt', 'r').read()
     update.message.reply_text(response, parse_mode=telegram.ParseMode.MARKDOWN)
 
