@@ -1,9 +1,10 @@
 import sqlite3
 import requests
 import json
+import constants
 
 
-currencies = ['USD', 'EUR', 'PLN', 'UAH', 'BYN']
+currencies = constants.currencies
 
 conn = sqlite3.connect('users.db')
 cursor = conn.cursor()

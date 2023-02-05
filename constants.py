@@ -1,0 +1,1 @@
+currencies = ['USD', 'EUR', 'PLN', 'UAH', 'BYN']
