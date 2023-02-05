@@ -11,7 +11,10 @@ TOKEN = open('token.txt', mode='r').read()
 
 # handling commands and conversations
 def start_command(update: telegram.Update, context: CallbackContext):
+    # add user
     users.add_user(update.message.chat_id)
+
+    # response
     response = open('commands/start.txt', 'r').read()
     update.message.reply_text(response, parse_mode=telegram.ParseMode.MARKDOWN)
 
