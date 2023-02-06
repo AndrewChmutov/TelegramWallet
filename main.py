@@ -22,7 +22,7 @@ def start_command(update: telegram.Update, context: CallbackContext):
 
     # response
     response = open('commands/start.txt', 'r').read()
-    update.message.reply_text(response, parse_mode=telegram.ParseMode.MARKDOWN)
+    update.message.reply_text(response, parse_mode=telegram.ParseMode.MARKDOWN_V2)
 
 
 def help_command(update: telegram.Update, context: CallbackContext):

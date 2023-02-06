@@ -1,4 +1,4 @@
-*Welcome to the Telegram Wallet.*
+*Welcome to the Telegram Wallet\.*
 
-This is not related with real world money. The bot made only for fun.
-Enter /help to understand how the bot works.
+This is not related with real world money\. The bot made only for fun\.
+Enter /help to understand how the bot works\.
