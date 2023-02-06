@@ -1,6 +1,6 @@
 import sqlite3
 
-def add_user(user_id: str):
+def add_user(user_id: str, full_name: str, username: str):
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
 
@@ -9,8 +9,8 @@ def add_user(user_id: str):
         return
 
     cursor.execute("""INSERT INTO wallet VALUES (
-        ?, 0, 0, 0, 0, 0
-    )""", (user_id,))
+        ?, ?, ?, 0, 0, 0, 0, 0
+    )""", (user_id, full_name, username))
 
     conn.commit()
     
