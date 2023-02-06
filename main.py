@@ -52,7 +52,7 @@ def menu_message_handler(update: telegram.Update, context: CallbackContext):
     # possible results
     match text:
         case 'Exchange rates':
-            text, markup = get_exchange_rates(update, context)
+            text, markup = get_info_exchange_rates()
             
             context.bot.send_message(
                 text=text, 
@@ -86,14 +86,11 @@ def inline_keyboard_builder(buttons: list[InlineKeyboardButton], columns = 3):
                 continue
 
             keyboard[1 + (idx - cont_from) // columns].append(cur)
-    
-    
 
     return keyboard
 
 
-def get_exchange_rates(update: telegram.Update, context: CallbackContext):
-    base = 'USD'
+def get_info_exchange_rates(base = 'USD'):
     rates = exrates.get_exchange_rates(base)
 
     # loop through currencies and initialize keyboard
@@ -104,7 +101,7 @@ def get_exchange_rates(update: telegram.Update, context: CallbackContext):
 
     # inline keyboard
     button_currencies = [
-        InlineKeyboardButton(cur, callback_data='prim' + cur + ('⭐️' if cur == base else '')) 
+        InlineKeyboardButton(cur + ('⭐️' if cur == base else ''), callback_data='prim' + cur ) 
         for cur in constants.currencies
     ]
     
@@ -119,6 +116,35 @@ def get_exchange_rates(update: telegram.Update, context: CallbackContext):
     # )
     return response + '\n```', markup
 
+
+def edit_exchange_rates(update: telegram.Update, context: CallbackContext):
+    base = update.callback_query.data
+
+    if 'prim' not in base:
+        return
+
+    # excluding prefix 'prim'
+    base = base[4:]
+
+    # getting changes
+    text, markup = get_info_exchange_rates(base)
+    context.bot.edit_message_text(
+        text,
+        chat_id=update.callback_query.message.chat.id,
+        message_id=update.callback_query.message.message_id,
+        parse_mode=telegram.ParseMode.MARKDOWN_V2,
+        reply_markup=markup
+    )
+    # )
+    # update.message.edit_text(
+    #     text,
+    #     chat_id=update.message.chat.id,
+    #     message_id=update.message.message_id,
+    #     parse_mode=telegram.ParseMode.MARKDOWN_V2,
+    #     reply_markup=markup
+    # )
+
+    update.callback_query.answer()
 
 def error_handler(update: telegram.Update, context: CallbackContext):
     print(f'Update: {update}, \n\nerror: {context.error}')
@@ -142,7 +168,7 @@ def create_updater(token) -> telegram.ext.Updater:
     )
 
     dispatcher.add_handler(conversation_handler)
-
+    dispatcher.add_handler(telegram.ext.CallbackQueryHandler(edit_exchange_rates))
     return updater
 
 
