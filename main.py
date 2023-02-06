@@ -52,7 +52,14 @@ def menu_message_handler(update: telegram.Update, context: CallbackContext):
     # possible results
     match text:
         case 'Exchange rates':
-            print_exchange_rates(update, context)
+            text, markup = get_exchange_rates(update, context)
+            
+            context.bot.send_message(
+                text=text, 
+                chat_id=update.message.chat.id, 
+                parse_mode=telegram.ParseMode.MARKDOWN_V2,
+                reply_markup=markup
+            )
             
 
 def inline_keyboard_builder(buttons: list[InlineKeyboardButton], columns = 3):
@@ -85,7 +92,7 @@ def inline_keyboard_builder(buttons: list[InlineKeyboardButton], columns = 3):
     return keyboard
 
 
-def print_exchange_rates(update: telegram.Update, context: CallbackContext):
+def get_exchange_rates(update: telegram.Update, context: CallbackContext):
     base = 'USD'
     rates = exrates.get_exchange_rates(base)
 
@@ -104,12 +111,13 @@ def print_exchange_rates(update: telegram.Update, context: CallbackContext):
     # creating keyboard
     markup = InlineKeyboardMarkup(inline_keyboard_builder(button_currencies, 3))
 
-    context.bot.send_message(
-        text=response + '\n```', 
-        chat_id=update.message.chat.id, 
-        parse_mode=telegram.ParseMode.MARKDOWN_V2,
-        reply_markup=markup
-    )
+    # context.bot.send_message(
+    #     text=response + '\n```', 
+    #     chat_id=update.message.chat.id, 
+    #     parse_mode=telegram.ParseMode.MARKDOWN_V2,
+    #     reply_markup=markup
+    # )
+    return response + '\n```', markup
 
 
 def error_handler(update: telegram.Update, context: CallbackContext):
