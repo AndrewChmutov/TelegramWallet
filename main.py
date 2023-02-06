@@ -2,11 +2,14 @@ import telegram
 import telegram.ext
 from telegram import ReplyKeyboardMarkup
 from telegram import KeyboardButton
+from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 
 # custom library
 import users
 import exrates
+import constants
 
 # token of the bot. For individual use, you should enter yous
 TOKEN = open('token.txt', mode='r').read()
@@ -52,16 +55,51 @@ def menu_message_handler(update: telegram.Update, context: CallbackContext):
             print_exchange_rates(update, context)
             
 
-def print_exchange_rates(update: telegram.Update, context):
+def inline_keyboard_builder(buttons: list[InlineKeyboardButton], columnts = 2):
+    # selecting the amount of rows in keyboard
+    rows = (len(buttons) / 2).__ceil__()
+    keyboard = [[] for _ in range(rows)]
+
+    # keys assignment
+    if len(buttons) % 2 == 0:
+        for idx, cur in enumerate(buttons):
+            keyboard[idx // 2].append(cur)
+    else:
+        keyboard[0].append(buttons[0])
+        
+        for idx, cur in enumerate(buttons):
+            if idx == 0:
+                continue
+
+            keyboard[1 + (idx - 1) // 2].append(cur)
+    
+    return keyboard
+
+
+def print_exchange_rates(update: telegram.Update, context: CallbackContext):
     base = 'USD'
     rates = exrates.get_exchange_rates(base)
+
     # loop through currencies and initialize keyboard
     response = f'*1 {base}* is:\n\n```'
     for currency in rates:
         formatted_float = '{:.2f}'.format(currency[1])
         response += '\n' + formatted_float + ' ' * (6 - len(formatted_float) % 7) + currency[0]
-    print(response)
-    update.message.reply_text(response + '\n```', parse_mode=telegram.ParseMode.MARKDOWN_V2)
+
+    # inline keyboard
+    button_currencies = [
+        InlineKeyboardButton(cur, callback_data='prim' + cur + ('⭐️' if cur == base else '')) 
+        for cur in constants.currencies
+    ]
+    
+    markup = InlineKeyboardMarkup(inline_keyboard_builder(button_currencies))
+    context.bot.send_message(
+        text=response + '\n```', 
+        chat_id=update.message.chat.id, 
+        parse_mode=telegram.ParseMode.MARKDOWN_V2,
+        reply_markup=markup
+    )
+
 
 
 
