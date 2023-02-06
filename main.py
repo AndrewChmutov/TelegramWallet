@@ -55,24 +55,33 @@ def menu_message_handler(update: telegram.Update, context: CallbackContext):
             print_exchange_rates(update, context)
             
 
-def inline_keyboard_builder(buttons: list[InlineKeyboardButton], columnts = 2):
+def inline_keyboard_builder(buttons: list[InlineKeyboardButton], columns = 3):
     # selecting the amount of rows in keyboard
-    rows = (len(buttons) / 2).__ceil__()
+    rows = (len(buttons) / columns).__ceil__()
     keyboard = [[] for _ in range(rows)]
 
     # keys assignment
-    if len(buttons) % 2 == 0:
+    
+    # where to start second row assignmens
+    cont_from = len(buttons) % columns
+
+    if cont_from == 0:
         for idx, cur in enumerate(buttons):
-            keyboard[idx // 2].append(cur)
+            keyboard[idx // columns].append(cur)
     else:
-        keyboard[0].append(buttons[0])
+        # fill the first row
+        for i in range(cont_from):
+            keyboard[0].append(buttons[i])
         
+        # fill other rows
         for idx, cur in enumerate(buttons):
-            if idx == 0:
+            if idx < cont_from:
                 continue
 
-            keyboard[1 + (idx - 1) // 2].append(cur)
+            keyboard[1 + (idx - cont_from) // columns].append(cur)
     
+    
+
     return keyboard
 
 
@@ -92,15 +101,15 @@ def print_exchange_rates(update: telegram.Update, context: CallbackContext):
         for cur in constants.currencies
     ]
     
-    markup = InlineKeyboardMarkup(inline_keyboard_builder(button_currencies))
+    # creating keyboard
+    markup = InlineKeyboardMarkup(inline_keyboard_builder(button_currencies, 3))
+
     context.bot.send_message(
         text=response + '\n```', 
         chat_id=update.message.chat.id, 
         parse_mode=telegram.ParseMode.MARKDOWN_V2,
         reply_markup=markup
     )
-
-
 
 
 def error_handler(update: telegram.Update, context: CallbackContext):
