@@ -6,6 +6,7 @@ from telegram.ext import CallbackContext
 
 # custom library
 import users
+import exrates
 
 # token of the bot. For individual use, you should enter yous
 TOKEN = open('token.txt', mode='r').read()
@@ -38,12 +39,30 @@ def menu_command(update: telegram.Update, context: CallbackContext):
 
 # fallback
 def cancel():
-    pass
+    return telegram.ext.ConversationHandler.END
 
 
 # Handle the result of the choice in the main menu
 def menu_message_handler(update: telegram.Update, context: CallbackContext):
     update.message.reply_text(update.message.text.upper())
+    text = update.message.text
+    # possible results
+    match text:
+        case 'Exchange rates':
+            print_exchange_rates(update, context)
+            
+
+def print_exchange_rates(update: telegram.Update, context):
+    base = 'USD'
+    rates = exrates.get_exchange_rates(base)
+    # loop through currencies and initialize keyboard
+    response = f'*1 {base}* is:\n\n```'
+    for currency in rates:
+        formatted_float = '{:.2f}'.format(currency[1])
+        response += '\n' + formatted_float + ' ' * (6 - len(formatted_float) % 7) + currency[0]
+    print(response)
+    update.message.reply_text(response + '\n```', parse_mode=telegram.ParseMode.MARKDOWN_V2)
+
 
 
 def error_handler(update: telegram.Update, context: CallbackContext):
