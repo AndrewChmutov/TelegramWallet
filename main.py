@@ -57,19 +57,25 @@ def build_num_keyboard(specifier: str):
     keyboard = inline_keyboard_builder(inline_buttons, columns=3)
     return keyboard
 
+
 def handle_num_keyboard(amount: str, data: str) -> str:
+    # if there already exists point, no possibility to add another one
     if data == '.' and amount.count('.') == 1:
         return amount
     
+    # if the amount is empty
     if not amount and data not in ['del', '.', 'Enter']:
         amount += data
+    # if not
     elif amount and data not in ['del', 'Enter']:
         amount += data
 
+    # pop the last number
     if amount and data == 'del':
         amount = amount[:-1]
 
     return amount
+
 
 def handle_num_keyboard_g_rates(update: telegram.Update, context: CallbackContext):
     data = update.callback_query.data[len('gex'):]
@@ -87,9 +93,11 @@ def handle_num_keyboard_g_rates(update: telegram.Update, context: CallbackContex
     text = text[0] + '\n' + amount_new
     markup = InlineKeyboardMarkup(build_num_keyboard('gex'))
 
+    # if edit message and not change message,
+    # then the error raises
     if amount_new == amount:
         return
-        
+
     context.bot.edit_message_text(
         text=text, 
         message_id=update.callback_query.message.message_id,
