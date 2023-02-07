@@ -50,24 +50,93 @@ def cancel():
     return telegram.ext.ConversationHandler.END
 
 
+def build_num_keyboard(specifier: str):
+    buttons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', '.', 'Enter']
+    inline_buttons = [InlineKeyboardButton(text=button, callback_data=specifier + button) for button in buttons]
+
+    keyboard = inline_keyboard_builder(inline_buttons, columns=3)
+    return keyboard
+
+def handle_num_keyboard(amount: str, data: str) -> str:
+    if data == '.' and amount.count('.') == 1:
+        return amount
+    
+    if not amount and data not in ['del', '.', 'Enter']:
+        amount += data
+    elif amount and data not in ['del', 'Enter']:
+        amount += data
+
+    if amount and data == 'del':
+        amount = amount[:-1]
+
+    return amount
+
+def handle_num_keyboard_g_rates(update: telegram.Update, context: CallbackContext):
+    data = update.callback_query.data[len('gex'):]
+    
+    amount: str
+    text = update.callback_query.message.text.split('\n')
+
+    if len(text) < 2:
+        amount = ''
+    else:
+        amount = text[1]
+    
+    amount_new = handle_num_keyboard(amount, data)
+
+    text = text[0] + '\n' + amount_new
+    markup = InlineKeyboardMarkup(build_num_keyboard('gex'))
+
+    if amount_new == amount:
+        return
+        
+    context.bot.edit_message_text(
+        text=text, 
+        message_id=update.callback_query.message.message_id,
+        chat_id=update.callback_query.message.chat.id,
+        reply_markup=markup
+    )
+
+
+def exchange_keyboard_builder(specifier: str):
+    base = ''
+    # inline keyboard
+    button_currencies = [
+        InlineKeyboardButton(cur + ('⭐️' if cur == base else ''), callback_data=specifier + cur ) 
+        for cur in constants.currencies
+    ]
+    
+    # creating keyboard
+    markup = InlineKeyboardMarkup(inline_keyboard_builder(button_currencies, 3, False))
+
+    return markup
+
 # Handle the result of the choice in the main menu
 def menu_message_handler(update: telegram.Update, context: CallbackContext):
     text = update.message.text
     # possible results
     match text:
         case 'Exchange rates':
-            text, markup = get_info_exchange_rates()
-            
+            # amount = get_amount()
+            # text, markup = get_info_exchange_rates()
+        
+            # text = '*Rates\.* Enter amount:\n'
+
+            # markup = InlineKeyboardMarkup(build_num_keyboard('gex'))
+            text = '*Global rates\.* Choose currency:'
+            markup = exchange_keyboard_builder('g_rates')
+
             context.bot.send_message(
                 text=text, 
                 chat_id=update.message.chat.id, 
                 parse_mode=telegram.ParseMode.MARKDOWN_V2,
                 reply_markup=markup
             )
-        
-        case 'Balance':
-            text = get_balance_message(update.message.chat.id)
-            update.message.reply_text(text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+            
+
+        # case 'Balance':
+        #     text = get_balance_message(update.message.chat.id)
+        #     update.message.reply_text(text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
             
 
@@ -173,7 +242,26 @@ def get_balance_message(user_id: str):
         response += f'{currency}:  {amount}\n'
 
     return response + '\n```'
+
+def callback_handler(update: telegram.Update, context: CallbackContext):
+    data = update.callback_query.data
+
+    if 'g_rates' in data:
+        text = '*Rates\.* Enter amount:\n'
+        markup = InlineKeyboardMarkup(build_num_keyboard('gex'))
+
+        context.bot.send_message(
+            text=text, 
+            chat_id=update.callback_query.message.chat.id,
+            parse_mode=telegram.ParseMode.MARKDOWN_V2,
+            reply_markup = markup
+        )
+    elif 'gexEnter' in data:
+        pass
+    if 'gex' in data:
+        handle_num_keyboard_g_rates(update, context)
     
+    update.callback_query.answer()
 
 # add functionality to the bot
 def create_updater(token) -> telegram.ext.Updater:
@@ -183,7 +271,7 @@ def create_updater(token) -> telegram.ext.Updater:
     dispatcher.add_handler(telegram.ext.CommandHandler('start', start_command))
     dispatcher.add_handler(telegram.ext.CommandHandler('help', help_command))
 
-    dispatcher.add_handler(telegram.ext.CallbackQueryHandler(edit_exchange_rates))
+    dispatcher.add_handler(telegram.ext.CallbackQueryHandler(callback_handler))
     dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, menu_message_handler))
     
     # main conversation
@@ -197,6 +285,14 @@ def create_updater(token) -> telegram.ext.Updater:
 
     # dispatcher.add_handler(conversation_handler)
     
+    # g_exchange_conversation = telegram.ext.ConversationHandler(
+    #     entry_points=[telegram.ext.MessageHandler(g_exchange_rates_message)],
+    #     states = {
+    #         1: [telegram.ext.MessageHandler(get_amount)]
+    #     },
+    #     fallbacks=[telegram.ext.]
+    # )
+
     return updater
 
 
