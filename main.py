@@ -160,6 +160,18 @@ def error_handler(update: telegram.Update, context: CallbackContext):
     print(f'Update: {update}, \n\nerror: {context.error}')
 
 
+def balance_message_handler(update: telegram.Update, context: CallbackContext):
+    if update.message.text != 'Balance':
+        return
+
+    balance = users.get_balance(update.message.chat.id)
+    response = 'You current balance:\n```\n'
+
+    for currency, amount in zip(constants.currencies, balance):
+        response += f'{currency}:  {amount}\n'
+    
+    update.message.reply_text(text=response + '\n```', parse_mode=telegram.ParseMode.MARKDOWN)
+
 # add functionality to the bot
 def create_updater(token) -> telegram.ext.Updater:
     updater = telegram.ext.Updater(token)
@@ -179,6 +191,7 @@ def create_updater(token) -> telegram.ext.Updater:
 
     dispatcher.add_handler(conversation_handler)
     dispatcher.add_handler(telegram.ext.CallbackQueryHandler(edit_exchange_rates))
+    dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, balance_message_handler))
     return updater
 
 
