@@ -26,22 +26,23 @@ def start_command(update: telegram.Update, context: CallbackContext):
 
     # response
     response = open('commands/start.txt', 'r').read()
-    update.message.reply_text(response, parse_mode=telegram.ParseMode.MARKDOWN_V2)
+
+    # main menu of actions
+    exrates = KeyboardButton('Exchange rates')
+    balance = KeyboardButton('Balance')
+    markup_reply = ReplyKeyboardMarkup([[exrates], [balance]], resize_keyboard=True)
+    context.bot.send_message(
+        update.message.chat.id, 
+        text=response, 
+        reply_markup=markup_reply,
+        parse_mode=telegram.ParseMode.MARKDOWN_V2
+    )
 
 
 def help_command(update: telegram.Update, context: CallbackContext):
     response = open('commands/help.txt', 'r').read()
     update.message.reply_text(response)
 
-
-# Main menu of actions
-def menu_command(update: telegram.Update, context: CallbackContext):
-    exrates = KeyboardButton('Exchange rates')
-    balance = KeyboardButton('Balance')
-    markup_reply = ReplyKeyboardMarkup([[exrates], [balance]], resize_keyboard=True)
-    context.bot.send_message(update.message.chat.id, 'Enter action:', reply_markup=markup_reply)
-
-    return 1
 
 
 # fallback
@@ -51,7 +52,6 @@ def cancel():
 
 # Handle the result of the choice in the main menu
 def menu_message_handler(update: telegram.Update, context: CallbackContext):
-    update.message.reply_text(update.message.text.upper())
     text = update.message.text
     # possible results
     match text:
@@ -64,6 +64,11 @@ def menu_message_handler(update: telegram.Update, context: CallbackContext):
                 parse_mode=telegram.ParseMode.MARKDOWN_V2,
                 reply_markup=markup
             )
+        
+        case 'Balance':
+            text = get_balance_message(update.message.chat.id)
+            update.message.reply_text(text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+
             
 
 def inline_keyboard_builder(buttons: list[InlineKeyboardButton], columns = 3, least_down = True):
@@ -160,17 +165,15 @@ def error_handler(update: telegram.Update, context: CallbackContext):
     print(f'Update: {update}, \n\nerror: {context.error}')
 
 
-def balance_message_handler(update: telegram.Update, context: CallbackContext):
-    if update.message.text != 'Balance':
-        return
-
-    balance = users.get_balance(update.message.chat.id)
+def get_balance_message(user_id: str):
+    balance = users.get_balance(user_id)
     response = 'You current balance:\n```\n'
 
     for currency, amount in zip(constants.currencies, balance):
         response += f'{currency}:  {amount}\n'
+
+    return response + '\n```'
     
-    update.message.reply_text(text=response + '\n```', parse_mode=telegram.ParseMode.MARKDOWN)
 
 # add functionality to the bot
 def create_updater(token) -> telegram.ext.Updater:
@@ -180,18 +183,20 @@ def create_updater(token) -> telegram.ext.Updater:
     dispatcher.add_handler(telegram.ext.CommandHandler('start', start_command))
     dispatcher.add_handler(telegram.ext.CommandHandler('help', help_command))
 
-    # main conversation
-    conversation_handler = telegram.ext.ConversationHandler(
-        entry_points=[telegram.ext.CommandHandler('menu', menu_command)],
-        states = {
-            1: [telegram.ext.MessageHandler(telegram.ext.Filters.text, menu_message_handler)]
-        },
-        fallbacks=[telegram.ext.CommandHandler('cancel', cancel)]
-    )
-
-    dispatcher.add_handler(conversation_handler)
     dispatcher.add_handler(telegram.ext.CallbackQueryHandler(edit_exchange_rates))
-    dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, balance_message_handler))
+    dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.text, menu_message_handler))
+    
+    # main conversation
+    # conversation_handler = telegram.ext.ConversationHandler(
+    #     entry_points=[telegram.ext.CommandHandler('menu', menu_command)],
+    #     states = {
+    #         1: [telegram.ext.MessageHandler(telegram.ext.Filters.text, menu_message_handler)]
+    #     },
+    #     fallbacks=[telegram.ext.CommandHandler('cancel', cancel)]
+    # )
+
+    # dispatcher.add_handler(conversation_handler)
+    
     return updater
 
 
