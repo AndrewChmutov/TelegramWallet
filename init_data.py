@@ -17,11 +17,11 @@ cursor = conn.cursor()
 cursor.execute("""CREATE TABLE wallet (user_id text UNIQUE, 
     full_name text,
     username text,
-    USD float,
-    EUR float,
-    PLN float,
-    UAH float,
-    BYN float 
+    USD real,
+    EUR real,
+    PLN real,
+    UAH real,
+    BYN real 
     )""")
 
 
