@@ -78,7 +78,7 @@ def handle_num_keyboard(amount: str, data: str) -> str:
 
 
 def handle_num_keyboard_g_rates(update: telegram.Update, context: CallbackContext):
-    data = update.callback_query.data[len('gex'):]
+    data = update.callback_query.data
     
     amount: str
     text = update.callback_query.message.text.split('\n')
@@ -88,10 +88,10 @@ def handle_num_keyboard_g_rates(update: telegram.Update, context: CallbackContex
     else:
         amount = text[1]
     
-    amount_new = handle_num_keyboard(amount, data)
+    amount_new = handle_num_keyboard(amount, data[len('gex---'):])
 
     text = text[0] + '\n' + amount_new
-    markup = InlineKeyboardMarkup(build_num_keyboard('gex'))
+    markup = InlineKeyboardMarkup(build_num_keyboard(data[:len('gex---')]))
 
     # if edit message and not change message,
     # then the error raises
@@ -100,8 +100,8 @@ def handle_num_keyboard_g_rates(update: telegram.Update, context: CallbackContex
 
     context.bot.edit_message_text(
         text=text, 
-        message_id=update.callback_query.message.message_id,
         chat_id=update.callback_query.message.chat.id,
+        message_id=update.callback_query.message.message_id,
         reply_markup=markup
     )
 
@@ -182,18 +182,18 @@ def inline_keyboard_builder(buttons: list[InlineKeyboardButton], columns = 3, le
     return keyboard
 
 
-def get_info_exchange_rates(base = 'USD'):
+def get_info_exchange_rates(amount: float, base = 'USD'):
     rates = exrates.get_exchange_rates(base)
 
     # loop through currencies and initialize keyboard
-    response = f'*1 {base}* is:\n\n```'
+    response = f'**{amount} {base}** is:\n\n```'
     for currency in rates:
-        formatted_float = '{:.2f}'.format(currency[1])
-        response += '\n' + formatted_float + ' ' * (6 - len(formatted_float) % 7) + currency[0]
+        formatted_float = '{:.2f}'.format(float(amount) * currency[1])
+        response += '\n' + currency[0] + '  ' + formatted_float
 
     # inline keyboard
     button_currencies = [
-        InlineKeyboardButton(cur + ('⭐️' if cur == base else ''), callback_data='prim' + cur ) 
+        InlineKeyboardButton(cur + ('⭐️' if cur == base else ''), callback_data='g_prim' + cur ) 
         for cur in constants.currencies
     ]
     
@@ -211,20 +211,20 @@ def get_info_exchange_rates(base = 'USD'):
 
 def edit_exchange_rates(update: telegram.Update, context: CallbackContext):
     base = update.callback_query.data
+    text = update.callback_query.message.text
+    amount = float(text[:text.index(' ')])
 
-    if 'prim' not in base:
-        return
 
-    # excluding prefix 'prim'
-    base = base[4:]
+    # excluding prefix 'g_prim'
+    base = base[6:]
 
     # getting changes
-    text, markup = get_info_exchange_rates(base)
+    text, markup = get_info_exchange_rates(amount, base)
     context.bot.edit_message_text(
         text,
         chat_id=update.callback_query.message.chat.id,
         message_id=update.callback_query.message.message_id,
-        parse_mode=telegram.ParseMode.MARKDOWN_V2,
+        parse_mode=telegram.ParseMode.MARKDOWN,
         reply_markup=markup
     )
     # )
@@ -255,21 +255,45 @@ def callback_handler(update: telegram.Update, context: CallbackContext):
     data = update.callback_query.data
 
     if 'g_rates' in data:
-        text = '*Rates\.* Enter amount:\n'
-        markup = InlineKeyboardMarkup(build_num_keyboard('gex'))
+        text = '**Rates.** Enter amount:\n'
+        markup = InlineKeyboardMarkup(build_num_keyboard('gex' + data[len('g_rates'):]))
 
-        context.bot.send_message(
+        context.bot.edit_message_text(
             text=text, 
             chat_id=update.callback_query.message.chat.id,
-            parse_mode=telegram.ParseMode.MARKDOWN_V2,
+            message_id=update.callback_query.message.message_id,
+            parse_mode=telegram.ParseMode.MARKDOWN,
             reply_markup = markup
         )
-    elif 'gexEnter' in data:
-        pass
-    if 'gex' in data:
+    elif 'gex' in data and 'Enter' in data:
+        amount: str
+        text = update.callback_query.message.text.split('\n')
+
+        if len(text) < 2:
+            amount = ''
+        else:
+            amount = text[1]
+        
+        if not amount:
+            handle_num_keyboard_g_rates(update, context)
+        else:
+            base = data[len('gex'):(len('gex') + 3)]
+            text, markup = get_info_exchange_rates(amount, base)
+
+            context.bot.edit_message_text(
+                text=text,
+                chat_id=update.callback_query.message.chat.id,
+                message_id=update.callback_query.message.message_id,
+                parse_mode=telegram.ParseMode.MARKDOWN,
+                reply_markup=markup
+            )
+    elif 'gex' in data:
         handle_num_keyboard_g_rates(update, context)
+    elif 'g_prim':
+        edit_exchange_rates(update, context)
     
     update.callback_query.answer()
+
 
 # add functionality to the bot
 def create_updater(token) -> telegram.ext.Updater:
