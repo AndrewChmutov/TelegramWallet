@@ -5,6 +5,7 @@ from telegram.ext import CallbackContext
 from builder import SuperBuilder
 from handler import SuperHandler
 import users
+import constants
 
 def callback_handler(update: Update, context: CallbackContext):
     data = update.callback_query.data
@@ -116,14 +117,27 @@ def callback_handler(update: Update, context: CallbackContext):
             if not amount:
                 SuperHandler.top_up_num(update, context)
 
-            users.top_up(
+            answer = users.top_up(
                 str(update.callback_query.message.chat.id),
                 base,
                 float(amount)
             )
 
-            text = '*Transaction successfully finished:*\n'
-            text += f'{amount} {base} are topped up.'
+            match answer:
+                case 0:
+                    text = '*Transaction successfully finished:*\n'
+                    text += f'{amount} {base} are topped up.'
+                case 1:
+                    text = '*Transaction cancelled:*\n'
+                    text += 'You achieved the limit of specific currency (over 10^6)'
+            
+            text += '\n\nCurrent balance:```'
+            balance = users.get_balance(str(update.callback_query.message.chat.id))
+    
+            for currency, amount in zip(constants.currencies, balance):
+                text += '\n' + currency + ': ' + '{:.2f}'.format(amount)
+            
+            text += '```'
 
             context.bot.edit_message_text(
                 text=text,

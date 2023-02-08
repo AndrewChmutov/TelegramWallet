@@ -27,5 +27,12 @@ def top_up(user_id: str, currency: str, amount: float):
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
 
-    cursor.execute(f'UPDATE wallet SET {currency} = {currency} + {amount} WHERE user_id = ?', (user_id,))
-    conn.commit()
+    cursor.execute(f'SELECT {currency} FROM wallet where user_id = ?', (user_id,))
+    current_amount = cursor.fetchone()[0]
+    
+    if current_amount + amount > 10 ** 6:
+        return 1
+    else:
+        cursor.execute(f'UPDATE wallet SET {currency} = {currency} + {amount} WHERE user_id = ?', (user_id,))
+        conn.commit()
+        return 0
