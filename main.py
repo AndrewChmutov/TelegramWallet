@@ -1,9 +1,12 @@
 import telegram
 import telegram.ext
+import time
+import threading
 
 # custom library
 from handler import SuperHandler
 import callback
+import exrates
 
 # token of the bot. For individual use, you should enter yous
 TOKEN = open('token.txt', mode='r').read()
@@ -25,9 +28,17 @@ def create_updater(token) -> telegram.ext.Updater:
     return updater
 
 
+def do_refreshes():
+    while True:
+        exrates.refresh()
+        time.sleep(60 * 60)
+
+
 # main body
 if __name__ == '__main__':
     updater = create_updater(TOKEN)
+
+    threading.Thread(target=do_refreshes).start()
 
     updater.start_polling()
     updater.idle()
