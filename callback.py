@@ -104,7 +104,6 @@ def callback_handler(update: Update, context: CallbackContext):
                 reply_markup=markup
             )
         elif 'Enter' in data and 'topam' in data:
-            print('kek')
             base = data[len('wallet:topam:'):len('wallet:topam:') + 3]
             amount: str
             text = update.callback_query.message.text.split('\n')
@@ -114,9 +113,9 @@ def callback_handler(update: Update, context: CallbackContext):
             else:
                 amount = text[2]
 
-            if amount == '':
-                return
-            print('kek', amount)
+            if not amount:
+                SuperHandler.top_up_num(update, context)
+
             users.top_up(
                 str(update.callback_query.message.chat.id),
                 base,
