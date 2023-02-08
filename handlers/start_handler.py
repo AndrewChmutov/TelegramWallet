@@ -18,9 +18,17 @@ def start_handler(update: Update, context: CallbackContext):
     response = open('commands/start.txt', 'r').read()
 
     # main menu of actions
+    wallet = KeyboardButton('My wallet')
     exrates = KeyboardButton('Exchange rates')
-    balance = KeyboardButton('Balance')
-    markup_reply = ReplyKeyboardMarkup([[exrates], [balance]], resize_keyboard=True)
+    settings = KeyboardButton('Settings')
+    adm_tools = KeyboardButton('Admin tools')
+
+    markup_reply = ReplyKeyboardMarkup(
+        [[wallet, exrates], 
+        [settings, adm_tools]], 
+        resize_keyboard=True
+    )
+    
     context.bot.send_message(
         update.message.chat.id, 
         text=response, 
