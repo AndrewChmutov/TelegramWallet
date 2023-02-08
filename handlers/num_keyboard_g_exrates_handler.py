@@ -15,10 +15,10 @@ def handle_num_keyboard_g_rates(update: Update, context: CallbackContext):
     else:
         amount = text[1]
     
-    amount_new = SuperBuilder.use_num_keyboard_g_exrates(amount, data[len('gex---'):])
+    amount_new = SuperBuilder.use_num_keyboard_g_exrates(amount, data[len('gex:---'):])
 
     text = text[0] + '\n' + amount_new
-    markup = InlineKeyboardMarkup(SuperBuilder.num_keyboard(data[:len('gex---')]))
+    markup = InlineKeyboardMarkup(SuperBuilder.num_keyboard(data[:len('gex:---')]))
 
     # if edit message and not change message,
     # then the error raises

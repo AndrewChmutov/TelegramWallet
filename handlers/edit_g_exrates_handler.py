@@ -8,8 +8,8 @@ def edit_g_exrates_handler(update: Update, context: CallbackContext):
     amount = float(text[:text.index(' ')])
 
 
-    # excluding prefix 'g_prim'
-    base = base[6:]
+    # excluding prefix 'gex:g_prim'
+    base = base[len('gex:g_prim:'):]
 
     # getting changes
     text, markup = SuperBuilder.get_global_exrates(amount, base)

@@ -24,7 +24,7 @@ def get_global_exrates(amount: float, base = 'USD'):
     response += '```'
     # inline keyboard
     button_currencies = [
-        InlineKeyboardButton(cur + ('⭐️' if cur == base else ''), callback_data='g_prim' + cur ) 
+        InlineKeyboardButton(cur + ('⭐️' if cur == base else ''), callback_data='gex:g_prim:' + cur ) 
         for cur in constants.currencies
     ]
     
