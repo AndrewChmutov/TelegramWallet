@@ -1,8 +1,6 @@
 import sqlite3
-import requests
-import json
 import constants
-
+import exrates
 
 currencies = constants.currencies
 
@@ -24,19 +22,4 @@ cursor.execute("""CREATE TABLE wallet (user_id text UNIQUE,
     BYN real 
     )""")
 
-
-
-
-truncated = {}
-for currency in currencies:
-    truncated[currency] = []
-    for cur in currencies:
-        if currency == cur:
-            continue
-        url = f'https://open.er-api.com/v6/latest/{currency}'
-        truncated[currency].append((cur, requests.get(url).json()['rates'][cur]))
-
-with open('exrates.json', 'w') as exrates:
-    json.dump(truncated, exrates)
-
-# print(response.json()['rates'])
+exrates.refresh()
