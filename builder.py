@@ -10,4 +10,4 @@ class SuperBuilder:
     num_keyboard                = functions.num_keyboard.num_keyboard_builder
     get_global_exrates          = functions.get_global_exrates.get_global_exrates
     use_num_keyboard_g_exrates  = functions.use_num_keyboard_g_exrates.use_num_keyboard_g_exrates
-    wallet_menu             = functions.wallet_menu.wallet_menu
+    wallet_menu                 = functions.wallet_menu.wallet_menu

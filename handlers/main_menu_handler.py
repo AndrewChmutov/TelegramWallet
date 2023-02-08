@@ -18,7 +18,7 @@ def main_menu_handler(update: Update, context: CallbackContext):
                 reply_markup=markup
             )
         case 'My wallet':
-            text, markup = SuperBuilder.wallet_keyboard(str(update.message.chat.id))
+            text, markup = SuperBuilder.wallet_menu(str(update.message.chat.id))
 
             context.bot.send_message(
                 text=text,
