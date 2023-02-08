@@ -21,3 +21,11 @@ def get_balance(user_id: str):
     cursor.execute('SELECT USD, EUR, PLN, UAH, BYN FROM wallet WHERE user_id = ?', (user_id,))
 
     return cursor.fetchone()
+
+
+def top_up(user_id: str, currency: str, amount: float):
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+
+    cursor.execute(f'UPDATE wallet SET {currency} = {currency} + {amount} WHERE user_id = ?', (user_id,))
+    conn.commit()

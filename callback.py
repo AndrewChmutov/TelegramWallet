@@ -4,6 +4,7 @@ from telegram.ext import CallbackContext
 
 from builder import SuperBuilder
 from handler import SuperHandler
+import users
 
 def callback_handler(update: Update, context: CallbackContext):
     data = update.callback_query.data
@@ -78,7 +79,7 @@ def callback_handler(update: Update, context: CallbackContext):
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=markup
             )
-        elif 'Top-up' in data:
+        elif 'Top-up' in data or ('topam' in data and 'back' in data):
             text = '*WALLET\TOP-UP*\nChoose the currency for top-up'
             markup = SuperBuilder.currency_keyboard('wallet:topcur:')
 
@@ -94,13 +95,42 @@ def callback_handler(update: Update, context: CallbackContext):
             text = f'*WALLET\TOP-UP\{base}*\nEnter the desired amount:\n'
             keyboard = SuperBuilder.num_keyboard(f'wallet:topam:{base}')
             markup = InlineKeyboardMarkup(keyboard)
-            
+
             context.bot.edit_message_text(
                 text=text,
                 chat_id=update.callback_query.message.chat_id,
                 message_id=update.callback_query.message.message_id,
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=markup
+            )
+        elif 'Enter' in data and 'topam' in data:
+            print('kek')
+            base = data[len('wallet:topam:'):len('wallet:topam:') + 3]
+            amount: str
+            text = update.callback_query.message.text.split('\n')
+
+            if len(text) < 3:
+                amount = ''
+            else:
+                amount = text[2]
+
+            if amount == '':
+                return
+            print('kek', amount)
+            users.top_up(
+                str(update.callback_query.message.chat.id),
+                base,
+                float(amount)
+            )
+
+            text = '*Transaction successfully finished:*\n'
+            text += f'{amount} {base} are topped up.'
+
+            context.bot.edit_message_text(
+                text=text,
+                chat_id=update.callback_query.message.chat_id,
+                message_id=update.callback_query.message.message_id,
+                parse_mode=ParseMode.MARKDOWN
             )
         elif 'topam' in data:
             SuperHandler.top_up_num(update, context)
