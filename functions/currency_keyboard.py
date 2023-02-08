@@ -11,7 +11,7 @@ def currency_keyboard_builder(specifier: str):
         for cur in constants.currencies
     ]
     
-    if 'wallet' in specifier:
+    if 'gex' not in specifier:
         button_currencies.append(InlineKeyboardButton('<< Back', callback_data=specifier + 'back'))
 
     # creating keyboard

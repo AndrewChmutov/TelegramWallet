@@ -5,21 +5,24 @@ from telegram import ParseMode
 from builder import SuperBuilder
 
 
-def handle_num_keyboard_g_rates(update: Update, context: CallbackContext):
+def top_up_num_handler(update: Update, context: CallbackContext):
     data = update.callback_query.data
+    base = data[len('wallet:topam:'):len('wallet:topam:') + 3]
     
     amount: str
     text = update.callback_query.message.text.split('\n')
 
-    if len(text) < 2:
+    if len(text) < 3:
         amount = ''
     else:
-        amount = text[1]
+        amount = text[2]
     
-    amount_new = SuperBuilder.use_num_keyboard_g_exrates(amount, data[len('gex:---'):])
+    print(amount)
+    amount_new = SuperBuilder.use_num_keyboard_g_exrates(amount, data[len('wallet:topam:---'):])
+    print(amount_new)
 
-    text = text[0] + '\n' + amount_new
-    markup = InlineKeyboardMarkup(SuperBuilder.num_keyboard(data[:len('gex:---')]))
+    text = '*' + text[0] + '*' + '\n' + text[1] + '\n' + amount_new
+    markup = InlineKeyboardMarkup(SuperBuilder.num_keyboard(data[:len('wallet:topam:---')]))
 
     # if edit message and not change message,
     # then the error raises

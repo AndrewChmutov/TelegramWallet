@@ -4,6 +4,7 @@ import handlers.error_handler
 import handlers.main_menu_handler
 import handlers.num_keyboard_g_exrates_handler
 import handlers.edit_g_exrates_handler
+import handlers.top_up_num_handler
 
 from telegram.ext import CommandHandler as ch
 from telegram.ext import MessageHandler as mh
@@ -16,6 +17,7 @@ class SuperHandler:
     main_menu               = handlers.main_menu_handler.main_menu_handler
     num_keyboard_g_exrates  = handlers.num_keyboard_g_exrates_handler.handle_num_keyboard_g_rates
     edit_g_exrates          = handlers.edit_g_exrates_handler.edit_g_exrates_handler
+    top_up_num              = handlers.top_up_num_handler.top_up_num_handler
     
     def get_handler(entity: str):
         mapping_entities = {

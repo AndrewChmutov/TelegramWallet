@@ -8,7 +8,7 @@ def main_menu_handler(update: Update, context: CallbackContext):
     # possible results
     match text:
         case 'Exchange rates':
-            text = '**Global rates.** Choose currency:'
+            text = '*Global rates.* Choose currency:'
             markup = SuperBuilder.currency_keyboard('gex:begin:')
 
             context.bot.send_message(
