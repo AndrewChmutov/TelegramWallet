@@ -56,15 +56,26 @@ def callback_handler(update: Update, context: CallbackContext):
             SuperHandler.num_keyboard_g_exrates(update, context)
 
     elif 'wallet' in data:
-        if 'Top-up':
-            text = 'Choose the currency for top-up'
+        if 'Top-up' in data:
+            text = '*WALLET\TOP-UP*\nChoose the currency for top-up'
             markup = SuperBuilder.currency_keyboard('wallet:')
 
             context.bot.edit_message_text(
                 text=text,
                 chat_id=update.callback_query.message.chat_id,
                 message_id=update.callback_query.message.message_id,
+                parse_mode=ParseMode.MARKDOWN,
                 reply_markup=markup
             )
-    
+        if 'back' in data:
+            text, markup = SuperBuilder.wallet_menu(update.callback_query.message.chat.id)
+
+            context.bot.edit_message_text(
+                text=text,
+                chat_id=update.callback_query.message.chat_id,
+                message_id=update.callback_query.message.message_id,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=markup
+            )
+
     update.callback_query.answer()

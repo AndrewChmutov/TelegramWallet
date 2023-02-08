@@ -7,10 +7,13 @@ def currency_keyboard_builder(specifier: str):
     base = ''
     # inline keyboard
     button_currencies = [
-        InlineKeyboardButton(cur + ('⭐️' if cur == base else ''), callback_data=specifier + cur ) 
+        InlineKeyboardButton(cur, callback_data=specifier + cur) 
         for cur in constants.currencies
     ]
     
+    if 'wallet' in specifier:
+        button_currencies.append(InlineKeyboardButton('<< Back', callback_data=specifier + 'back'))
+
     # creating keyboard
     markup = InlineKeyboardMarkup(inline_keyboard_builder(button_currencies, 3, False))
 

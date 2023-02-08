@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 
 def wallet_menu(user_id: str):
-    text = 'Your balance:\n```'
+    text = '*WALLET*\nYour balance:\n```'
 
     balance = users.get_balance(user_id)
     
