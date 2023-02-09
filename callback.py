@@ -70,18 +70,9 @@ def callback_handler(update: Update, context: CallbackContext):
             SuperHandler.num_keyboard_g_exrates(update, context)
 
     elif 'wallet' in data:
-        if 'topcur' in data and 'back' in data:
-            text, markup = SuperBuilder.wallet_menu(str(update.callback_query.message.chat.id))
-
-            context.bot.edit_message_text(
-                text=text,
-                chat_id=update.callback_query.message.chat.id,
-                message_id=update.callback_query.message.message_id,
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=markup
-            )
-        elif 'Top-up' in data or ('topam' in data and 'back' in data):
-            text = '*WALLET\TOP-UP*\nChoose the currency for top-up'
+        # top-up handle
+        if 'Top-up' in data or ('topam' in data and 'back' in data):
+            text = '*WALLET \ TOP-UP*\nChoose the currency for top-up'
             markup = SuperBuilder.currency_keyboard('wallet:topcur:')
 
             context.bot.edit_message_text(
@@ -91,9 +82,9 @@ def callback_handler(update: Update, context: CallbackContext):
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=markup
             )
-        elif 'topcur' in data:
+        elif 'topcur' in data and 'back' not in data:
             base = data[len('wallet:topcur:'):len('wallet:topcur:') + 3]
-            text = f'*WALLET\TOP-UP\{base}*\nEnter the desired amount:\n'
+            text = f'*WALLET \ TOP-UP \ {base}*\nEnter the desired amount:\n'
             keyboard = SuperBuilder.num_keyboard(f'wallet:topam:{base}')
             markup = InlineKeyboardMarkup(keyboard)
 
@@ -131,7 +122,7 @@ def callback_handler(update: Update, context: CallbackContext):
                     text = '*Transaction cancelled:*\n'
                     text += 'You achieved the limit of specific currency (over 10^6)'
             
-            text += '\n\nCurrent balance:```'
+            text += '\n\nCurrent balance:\n```'
             balance = users.get_balance(str(update.callback_query.message.chat.id))
     
             for currency, amount in zip(constants.currencies, balance):
@@ -147,7 +138,31 @@ def callback_handler(update: Update, context: CallbackContext):
             )
         elif 'topam' in data:
             SuperHandler.top_up_num(update, context)
+        # withdraw handle
+        elif 'Withdraw' in data or ('withdraw_k' in data and 'back' in data):
+            text = '*WALLET \ WITHDRAW*\nChoose the currency for money withdraw'
+            markup = SuperBuilder.currency_keyboard('wallet:withdraw:')
 
+            context.bot.edit_message_text(
+                text=text,
+                chat_id=update.callback_query.message.chat_id,
+                message_id=update.callback_query.message.message_id,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=markup
+            )
+        elif ('withdraw' in data and 'back' not in data):
+            base = data[len('wallet:withdraw:'):len('wallet:withdraw:') + 3]
+            text = f'*WALLET \ WITHDRAW \ {base}*\nEnter the desired amount:\n'
+            keyboard = SuperBuilder.num_keyboard(f'wallet:withdraw_k:{base}')
+            markup = InlineKeyboardMarkup(keyboard)
+
+            context.bot.edit_message_text(
+                text=text,
+                chat_id=update.callback_query.message.chat_id,
+                message_id=update.callback_query.message.message_id,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=markup
+            )
         elif 'back' in data:
             text, markup = SuperBuilder.wallet_menu(update.callback_query.message.chat.id)
 
